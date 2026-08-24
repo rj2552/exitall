@@ -1,49 +1,24 @@
-# My IPTV Player
+# My IPTV — M3U + TV Interface
 
-A small, static IPTV/HLS web-player starter designed for GitHub Pages.
+A GitHub Pages IPTV player with M3U playlist loading, categories, search, logos, favorites and fullscreen playback.
 
-## What it does
+## Load playlists
 
-- Responsive dark IPTV interface
-- Searchable channel list
-- Add HLS `.m3u8` streams from the browser
-- Stores the channel list in `localStorage`
-- Plays HLS through hls.js where supported
-- Uses native HLS playback where the browser provides it
-- No server or database required
+You can load an M3U playlist in three ways:
+1. URL — requires the playlist server to permit browser CORS requests.
+2. Paste — paste M3U text directly.
+3. File — select an `.m3u`/`.m3u8` file from your computer.
+
+## Deploy
+
+Upload `index.html`, `style.css`, `app.js`, and `README.md` to the root of your GitHub repository. Publish with GitHub Pages from `main` and `/ (root)`.
 
 ## Important
 
-This project is a player, not a stream-hosting service. Add only streams you own or are authorized to access and display.
+GitHub Pages hosts the player only. It does not host or proxy video streams. Stream and playlist URLs must be ones you are authorized to access, display, or redistribute. Browser playback also depends on the stream server permitting cross-origin access.
 
-GitHub Pages hosts the HTML/CSS/JavaScript application; it does not proxy the video streams.
+Example format:
 
-## Deploy on GitHub Pages
-
-1. Create a new GitHub repository.
-2. Upload `index.html`, `style.css`, `app.js`, and this README.
-3. Open the repository's **Settings → Pages**.
-4. Under **Build and deployment**, select **Deploy from a branch**.
-5. Select your main branch and `/ (root)`.
-6. Save and wait for GitHub Pages to publish the site.
-
-Your site will normally be available at:
-
-`https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/`
-
-## Add a channel
-
-Open the site and click **+ Add stream**.
-
-Enter:
-
-- Channel name
-- An authorized HTTPS HLS `.m3u8` URL
-- Category
-
-## Common reason a stream doesn't play
-
-The stream server must permit browser access (CORS) and the stream must be reachable over HTTPS when your GitHub Pages site is HTTPS. A playlist URL can be valid but still fail in a browser if the provider blocks cross-origin requests or requires authentication.
-
-hls.js documentation:
-https://github.com/video-dev/hls.js
+#EXTM3U
+#EXTINF:-1 tvg-logo="https://example.com/logo.png" group-title="News",Example News
+https://example.com/live/news.m3u8

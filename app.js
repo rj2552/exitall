@@ -1,171 +1,19 @@
-const video = document.getElementById("video");
-const emptyState = document.getElementById("emptyState");
-const channelsEl = document.getElementById("channels");
-const countEl = document.getElementById("channelCount");
-const nowTitle = document.getElementById("nowTitle");
-const statusEl = document.getElementById("status");
-const searchEl = document.getElementById("search");
-const dialog = document.getElementById("addDialog");
-const addForm = document.getElementById("addForm");
-
-let hls = null;
-let channels = JSON.parse(localStorage.getItem("iptvChannels") || "[]");
-let selectedId = null;
-
-function save() {
-  localStorage.setItem("iptvChannels", JSON.stringify(channels));
-}
-
-function iconFor(name) {
-  return (name || "?").trim().charAt(0).toUpperCase() || "?";
-}
-
-function render() {
-  const query = searchEl.value.trim().toLowerCase();
-  const visible = channels.filter(c =>
-    c.name.toLowerCase().includes(query) ||
-    c.category.toLowerCase().includes(query)
-  );
-
-  countEl.textContent = `${channels.length} channel${channels.length === 1 ? "" : "s"}`;
-
-  if (!visible.length) {
-    channelsEl.innerHTML = `<div class="empty-list">${channels.length ? "No channels match your search." : "No channels yet.<br>Click “+ Add stream” to add one."}</div>`;
-    return;
-  }
-
-  channelsEl.innerHTML = visible.map(c => `
-    <button class="channel ${c.id === selectedId ? "active" : ""}" data-id="${escapeHtml(c.id)}">
-      <span class="channel-icon">${escapeHtml(iconFor(c.name))}</span>
-      <span class="channel-info">
-        <span class="channel-name">${escapeHtml(c.name)}</span>
-        <span class="channel-meta">${escapeHtml(c.category)}</span>
-      </span>
-    </button>
-  `).join("");
-
-  channelsEl.querySelectorAll(".channel").forEach(btn => {
-    btn.addEventListener("click", () => play(btn.dataset.id));
-  });
-}
-
-function play(id) {
-  const channel = channels.find(c => c.id === id);
-  if (!channel) return;
-
-  selectedId = id;
-  nowTitle.textContent = channel.name;
-  statusEl.textContent = "Loading…";
-  statusEl.className = "status";
-  emptyState.style.display = "none";
-  render();
-
-  if (hls) {
-    hls.destroy();
-    hls = null;
-  }
-
-  video.pause();
-  video.removeAttribute("src");
-  video.load();
-
-  if (window.Hls && Hls.isSupported()) {
-    hls = new Hls({
-      enableWorker: true,
-      lowLatencyMode: true
-    });
-
-    hls.loadSource(channel.url);
-    hls.attachMedia(video);
-
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      statusEl.textContent = "Ready";
-      statusEl.className = "status";
-      video.play().catch(() => {});
-    });
-
-    hls.on(Hls.Events.ERROR, (_, data) => {
-      console.error("HLS error", data);
-      if (data.fatal) {
-        statusEl.textContent = "Stream error";
-        statusEl.className = "status";
-      }
-    });
-  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-    video.src = channel.url;
-    video.addEventListener("loadedmetadata", () => {
-      statusEl.textContent = "Ready";
-      video.play().catch(() => {});
-    }, { once: true });
-  } else {
-    statusEl.textContent = "HLS not supported";
-  }
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
-  }[char]));
-}
-
-document.getElementById("addBtn").addEventListener("click", () => {
-  addForm.reset();
-  dialog.showModal();
-  document.getElementById("name").focus();
-});
-
-function closeDialog() {
-  dialog.close();
-}
-
-document.getElementById("closeDialog").addEventListener("click", closeDialog);
-document.getElementById("cancelBtn").addEventListener("click", closeDialog);
-
-addForm.addEventListener("submit", event => {
-  event.preventDefault();
-
-  const channel = {
-    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    name: document.getElementById("name").value.trim(),
-    url: document.getElementById("url").value.trim(),
-    category: document.getElementById("category").value
-  };
-
-  channels.push(channel);
-  save();
-  render();
-  dialog.close();
-  play(channel.id);
-});
-
-document.getElementById("clearBtn").addEventListener("click", () => {
-  if (!channels.length) return;
-  if (!confirm("Remove all saved channels from this browser?")) return;
-
-  channels = [];
-  selectedId = null;
-  save();
-  if (hls) hls.destroy();
-  video.pause();
-  video.removeAttribute("src");
-  video.load();
-  emptyState.style.display = "";
-  nowTitle.textContent = "Nothing selected";
-  statusEl.textContent = "Ready";
-  statusEl.className = "status";
-  render();
-});
-
-searchEl.addEventListener("input", render);
-
-video.addEventListener("playing", () => {
-  statusEl.textContent = "Playing";
-  statusEl.className = "status live";
-});
-
-video.addEventListener("waiting", () => {
-  statusEl.textContent = "Buffering…";
-  statusEl.className = "status";
-});
-
-render();
+const $=id=>document.getElementById(id);
+const video=$("video"),empty=$("empty"),channelsEl=$("channels"),catsEl=$("cats"),search=$("search");
+let channels=JSON.parse(localStorage.getItem("iptvChannelsV2")||"[]"),favorites=JSON.parse(localStorage.getItem("iptvFavorites")||"[]");
+let selected=localStorage.getItem("iptvSelected"),category="All",hls=null;
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const initial=s=>(s||"?").trim()[0]?.toUpperCase()||"?";
+function save(){localStorage.setItem("iptvChannelsV2",JSON.stringify(channels))}
+function parseM3U(text){let out=[],meta=null;for(const raw of text.replace(/\r/g,"").split("\n")){let line=raw.trim();if(!line)continue;if(line.startsWith("#EXTINF")){let comma=line.indexOf(","),a=comma>=0?line.slice(0,comma):line,n=comma>=0?line.slice(comma+1).trim():"Unnamed";let get=k=>(a.match(new RegExp(k+'="([^"]*)"','i'))||[])[1]||"";meta={name:n||get("tvg-name")||"Unnamed",logo:get("tvg-logo"),category:get("group-title")||"General"}}else if(!line.startsWith("#")&&meta){let c={...meta,url:line};c.id=c.url+"|"+c.name+"|"+out.length;out.push(c);meta=null}}return out}
+function render(){let cats=["All",...new Set(channels.map(c=>c.category))];if(!cats.includes(category))category="All";catsEl.innerHTML=cats.map(c=>`<button class="pill ${c==category?"on":""}" data-c="${esc(c)}">${esc(c)}</button>`).join("");catsEl.querySelectorAll("button").forEach(b=>b.onclick=()=>{category=b.dataset.c;render()});let q=search.value.toLowerCase(),list=channels.filter(c=>(category=="All"||c.category==category)&&(c.name+" "+c.category).toLowerCase().includes(q));$("count").textContent=`${channels.length} channel${channels.length==1?"":"s"}`;if(!list.length){channelsEl.innerHTML=`<div style="padding:35px;text-align:center;color:#7e8998">${channels.length?"No matches.":"No playlist loaded."}</div>`;return}channelsEl.innerHTML=list.map(c=>`<button class="channel ${c.id==selected?"active":""}" data-id="${esc(c.id)}">${c.logo?`<img class="logo" src="${esc(c.logo)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="fallback" style="display:none">${esc(initial(c.name))}</span>`:`<span class="fallback">${esc(initial(c.name))}</span>`}<span class="ct"><span class="cn">${favorites.includes(c.id)?"★ ":""}${esc(c.name)}</span><span class="cm">${esc(c.category)}</span></span></button>`).join("");channelsEl.querySelectorAll(".channel").forEach(b=>b.onclick=()=>play(b.dataset.id))}
+function play(id){let c=channels.find(x=>x.id==id);if(!c)return;selected=id;localStorage.setItem("iptvSelected",id);$("now").textContent=c.name;$("cat").textContent=c.category;$("status").textContent="Loading…";empty.style.display="none";$("fav").textContent=favorites.includes(id)?"★":"☆";render();if(hls){hls.destroy();hls=null}video.pause();video.removeAttribute("src");video.load();if(!c.url){$("status").textContent="No stream URL";return}if(window.Hls&&Hls.isSupported()){hls=new Hls({enableWorker:true,lowLatencyMode:true});hls.loadSource(c.url);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,()=>{ $("status").textContent="Ready";video.play().catch(()=>{})});hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal)$("status").textContent="Stream error"})}else if(video.canPlayType("application/vnd.apple.mpegurl")){video.src=c.url;video.onloadedmetadata=()=>{ $("status").textContent="Ready";video.play().catch(()=>{})}}else $("status").textContent="HLS unsupported"}
+async function load(text,source){let parsed=parseM3U(text);if(!parsed.length)throw Error("No channels found. Check the M3U format.");channels=parsed;selected=null;save();localStorage.setItem("iptvPlaylistName",source);$("pname").textContent=source;$("pmeta").textContent=`${channels.length} channels loaded`;render()}
+function open(){ $("err").hidden=true;$("dlg").showModal()}
+$("playlistBtn").onclick=open;$("load").onclick=open;$("close").onclick=()=>$("dlg").close();$("cancel").onclick=()=>$("dlg").close();
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".pane").forEach(x=>x.classList.remove("on"));t.classList.add("on");$(t.dataset.t).classList.add("on")});
+$("form").onsubmit=async e=>{e.preventDefault();$("err").hidden=true;try{let active=document.querySelector(".tab.on").dataset.t,text="",source="M3U playlist";if(active=="url"){let u=$("urlInput").value.trim();if(!u)throw Error("Enter a playlist URL.");let r=await fetch(u);if(!r.ok)throw Error("Playlist request failed. The server may block CORS.");text=await r.text();source=u;localStorage.setItem("iptvLastUrl",u)}else if(active=="paste"){text=$("textInput").value.trim();if(!text)throw Error("Paste M3U content.")}else{let f=$("fileInput").files[0];if(!f)throw Error("Choose an M3U file.");text=await f.text();source=f.name}await load(text,source);$("dlg").close()}catch(err){$("err").textContent=err.message;$("err").hidden=false}};
+$("reload").onclick=()=>{let u=localStorage.getItem("iptvLastUrl");if(!u)return open();fetch(u).then(r=>r.text()).then(t=>load(t,u)).catch(()=>open())};
+$("fav").onclick=()=>{if(!selected)return;favorites=favorites.includes(selected)?favorites.filter(x=>x!=selected):[...favorites,selected];localStorage.setItem("iptvFavorites",JSON.stringify(favorites));$("fav").textContent=favorites.includes(selected)?"★":"☆";render()};
+$("fsBtn").onclick=()=>$("wrap").requestFullscreen?.();search.oninput=render;video.onplaying=()=>{$("status").textContent="Playing"};video.onwaiting=()=>{$("status").textContent="Buffering…"};
+$("pname").textContent=localStorage.getItem("iptvPlaylistName")||"No playlist loaded";if(channels.length)$("pmeta").textContent=`${channels.length} channels loaded`;render();
