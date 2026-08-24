@@ -1,25 +1,17 @@
 <!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My IPTV</title><link rel="stylesheet" href="style.css">
-</head><body>
-<header><div class="brand"><b>▶</b> My IPTV</div><div><button id="playlistBtn">☰ Playlist</button><button id="fsBtn" class="dark">⛶ Fullscreen</button></div></header>
-<main>
-<section class="grid">
-<div class="player"><div id="wrap"><video id="video" controls playsinline></video><div id="empty"><strong>▶</strong><h1>Select a channel</h1><p>Load an M3U playlist and choose a channel.</p></div></div>
-<div class="info"><div><small>NOW PLAYING</small><h2 id="now">Nothing selected</h2><span id="cat">—</span></div><div><span id="status">Ready</span><button id="fav">☆</button></div></div></div>
-<aside><div class="head"><div><small>LIVE TV</small><h2 id="count">0 channels</h2></div><button id="reload">↻</button></div>
-<input id="search" placeholder="Search channels…"><div id="cats"></div><div id="channels"></div></aside>
-</section>
-<div class="bar"><div><b id="pname">No playlist loaded</b><span id="pmeta">Load an M3U playlist to begin.</span></div><button id="load">Load M3U</button></div>
-</main>
-<dialog id="dlg"><form id="form"><button type="button" id="close" class="x">×</button><small>PLAYLIST</small><h2>Load an M3U playlist</h2>
-<nav><button type="button" class="tab on" data-t="url">URL</button><button type="button" class="tab" data-t="paste">Paste</button><button type="button" class="tab" data-t="file">File</button></nav>
-<div id="url" class="pane on"><label>M3U URL<input id="urlInput" type="url" placeholder="https://example.com/playlist.m3u"></label><p>URL loading requires the playlist server to allow browser CORS requests.</p></div>
-<div id="paste" class="pane"><label>Paste M3U content<textarea id="textInput" rows="10" placeholder="#EXTM3U&#10;#EXTINF:-1 group-title=&quot;News&quot;,Example News&#10;https://example.com/live.m3u8"></textarea></label></div>
-<div id="file" class="pane"><label>Select M3U/M3U8 file<input id="fileInput" type="file" accept=".m3u,.m3u8,.txt"></label><p>Local files avoid playlist CORS restrictions.</p></div>
-<div id="err" class="err" hidden></div><div class="actions"><button type="button" id="cancel" class="dark">Cancel</button><button type="submit">Load playlist</button></div>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My IPTV</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><div class="brand">▶ <b>My IPTV</b></div><div><button id="playlistBtn">☰ Playlist</button><button id="fsBtn" class="dark">⛶ Fullscreen</button></div></header>
+<main><section class="grid"><div class="player"><div id="wrap"><video id="video" controls playsinline></video><div id="empty"><strong>▶</strong><h1>Select a channel</h1><p>Connect Xtream or load an M3U playlist.</p></div></div><div class="info"><div><small>NOW PLAYING</small><h2 id="now">Nothing selected</h2><span id="cat">—</span></div><div><span id="status">Ready</span><button id="fav">☆</button></div></div></div>
+<aside><div class="head"><div><small>LIVE TV</small><h2 id="count">0 channels</h2></div><button id="reload">↻</button></div><input id="search" placeholder="Search channels…"><div id="cats"></div><div id="channels"></div></aside></section>
+<div class="bar"><div><b id="pname">No playlist loaded</b><span id="pmeta">Connect an account or load M3U.</span></div><button id="load">Load playlist</button></div></main>
+<dialog id="dlg"><form id="form"><button type="button" id="close" class="x">×</button><small>PLAYLIST</small><h2>Connect / Load Playlist</h2>
+<nav><button type="button" class="tab on" data-t="xtream">Xtream Codes</button><button type="button" class="tab" data-t="url">M3U URL</button><button type="button" class="tab" data-t="paste">Paste</button><button type="button" class="tab" data-t="file">File</button></nav>
+<div id="xtream" class="pane on"><label>Server URL<input id="server" type="url" placeholder="https://provider.example:8080"></label><label>Username<input id="user" autocomplete="username"></label><label>Password<input id="pass" type="password" autocomplete="current-password"></label><label class="check"><input id="remember" type="checkbox"> Remember credentials on this device</label><p>Credentials are sent directly from your browser to your provider. Use only with an authorized subscription.</p></div>
+<div id="url" class="pane"><label>M3U URL<input id="urlInput" type="url" placeholder="https://example.com/playlist.m3u"></label></div>
+<div id="paste" class="pane"><label>Paste M3U content<textarea id="textInput" rows="8"></textarea></label></div>
+<div id="file" class="pane"><label>Select M3U/M3U8 file<input id="fileInput" type="file" accept=".m3u,.m3u8,.txt"></label></div>
+<div id="err" class="err" hidden></div><div class="actions"><button type="button" id="cancel" class="dark">Cancel</button><button type="submit">Connect / Load</button></div>
 </form></dialog>
-<footer>My IPTV <span>Static GitHub Pages player</span></footer>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.16/dist/hls.min.js"></script><script src="app.js"></script>
-</body></html>
+<footer>My IPTV <span>Personal Xtream + M3U browser player</span></footer>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.16/dist/hls.min.js"></script><script src="app.js"></script></body></html>
