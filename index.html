@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My IPTV Player</title>
+  <meta name="description" content="A simple IPTV/HLS web player for authorized streams.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">▶</span>
+      <span>My IPTV</span>
+    </div>
+    <div class="toolbar">
+      <button id="addBtn" class="button">+ Add stream</button>
+      <button id="clearBtn" class="button ghost">Clear</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="player-panel">
+      <div class="video-wrap">
+        <video id="video" controls playsinline></video>
+        <div id="emptyState" class="empty-state">
+          <div class="empty-icon">▶</div>
+          <h1>Choose a channel</h1>
+          <p>Add an authorized HLS (.m3u8) stream or select one from the list.</p>
+        </div>
+      </div>
+      <div class="now-playing">
+        <div>
+          <div class="eyebrow">NOW PLAYING</div>
+          <h2 id="nowTitle">Nothing selected</h2>
+        </div>
+        <span id="status" class="status">Ready</span>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div>
+          <div class="eyebrow">CHANNELS</div>
+          <h2 id="channelCount">0 channels</h2>
+        </div>
+        <input id="search" type="search" placeholder="Search">
+      </div>
+      <div id="channels" class="channels"></div>
+    </aside>
+  </main>
+
+  <dialog id="addDialog">
+    <form method="dialog" id="addForm" class="dialog-card">
+      <button type="button" id="closeDialog" class="close" aria-label="Close">×</button>
+      <div class="eyebrow">ADD CHANNEL</div>
+      <h2>Add an authorized stream</h2>
+      <label>
+        Channel name
+        <input id="name" required placeholder="My Channel">
+      </label>
+      <label>
+        HLS stream URL
+        <input id="url" required type="url" placeholder="https://example.com/live/stream.m3u8">
+      </label>
+      <label>
+        Category
+        <select id="category">
+          <option>General</option>
+          <option>News</option>
+          <option>Sports</option>
+          <option>Entertainment</option>
+          <option>Music</option>
+          <option>Kids</option>
+        </select>
+      </label>
+      <div class="dialog-actions">
+        <button type="button" id="cancelBtn" class="button ghost">Cancel</button>
+        <button type="submit" class="button">Add channel</button>
+      </div>
+      <p class="hint">Use streams you own or are authorized to access and display.</p>
+    </form>
+  </dialog>
+
+  <footer>
+    <span>My IPTV Player</span>
+    <span>Static GitHub Pages starter</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.16/dist/hls.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
